@@ -1,0 +1,30 @@
+uploads/
+*.csv
+.env
+.env.local
+
+# ML models and data
+models/
+*.pkl
+*.joblib
+*.h5
+*.onnx
+
+# Database
+*.db
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+EOF
