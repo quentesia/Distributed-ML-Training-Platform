@@ -3,6 +3,12 @@ uploads/
 .env
 .env.local
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
 # ML models and data
 models/
 *.pkl
