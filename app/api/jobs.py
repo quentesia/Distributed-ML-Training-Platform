@@ -4,9 +4,11 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.database.connection import get_db
 from app.database.models import TrainingJob
+from app.tasks.training import train_model
 
 router = APIRouter(prefix="/jobs", tags=["Training Jobs"])
 
@@ -46,15 +48,22 @@ async def upload_dataset(
     with open(file_path, "wb") as f:
         f.write(file_content)
 
-    job = TrainingJob(dataset_filename=file.filename, status="pending")
+    # Calculate version
+    max_version = db.query(func.max(TrainingJob.version)).filter(TrainingJob.dataset_filename == file.filename).scalar()
+    new_version = (max_version or 0) + 1
+
+    job = TrainingJob(dataset_filename=file.filename, status="pending", version=new_version)
 
     db.add(job)
     db.commit()
     db.refresh(job)
 
+    train_model.delay(job.id, file_path)
+
     return {
         "job_id": job.id,
         "status": job.status,
+        "version": job.version,
         "dataset_filename": job.dataset_filename,
         "message": "Dataset uploaded successfully. Training will begin shortly.",
     }
